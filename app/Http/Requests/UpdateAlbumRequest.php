@@ -24,7 +24,7 @@ class UpdateAlbumRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'name' => 'required'
         ];
     }
 }
