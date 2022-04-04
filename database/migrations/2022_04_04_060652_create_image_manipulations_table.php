@@ -17,12 +17,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('path', 2000);
-            $table->string('output_path', 2000);
+            $table->string('output_path', 2000)->nullable();
             $table->string('type', 25);
             $table->text('data');
-            $table->foreignId('user_id')->constrained();
-            $table->foreignId('album_id')->constrained();
-            $table->timestamp('created_at');
+            // TODO: change to constrained
+            $table->foreignId('user_id')->nullable();
+            $table->foreignId('album_id')->nullable();
+            $table->timestamp('created_at')->nullable();
         });
     }
 
