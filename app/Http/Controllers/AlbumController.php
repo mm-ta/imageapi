@@ -51,7 +51,9 @@ class AlbumController extends Controller
      */
     public function update(UpdateAlbumRequest $request, Album $album)
     {
-        //
+        $album->update($request->all());
+
+        return $album;
     }
 
     /**
