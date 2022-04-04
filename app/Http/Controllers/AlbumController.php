@@ -64,6 +64,8 @@ class AlbumController extends Controller
      */
     public function destroy(Album $album)
     {
-        //
+        $album->delete();
+
+        return response('resource deleted', 204);
     }
 }
