@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers\V1;
 
-use App\Models\Album;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAlbumRequest;
-use App\Http\Resources\V1\AlbumResource;
 use App\Http\Requests\UpdateAlbumRequest;
+use App\Repositories\Interfaces\AlbumRepositoryInterface;
 
 class AlbumController extends Controller
 {
+    protected AlbumRepositoryInterface $albumRepository;
+
+    public function __construct(AlbumRepositoryInterface $albumRepository)
+    {
+        $this->albumRepository = $albumRepository;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -17,7 +23,7 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        return AlbumResource::collection(Album::paginate());
+        return $this->albumRepository->allPaginated();
     }
 
     /**
@@ -28,49 +34,45 @@ class AlbumController extends Controller
      */
     public function store(StoreAlbumRequest $request)
     {
-        $album = Album::create($request->all());
+        $album = $this->albumRepository->createAlbum($request->all());
 
-        return $album;
+        return $this->albumRepository->album($album);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Album  $album
+     * @param  int $album_id
      * @return \Illuminate\Http\Response
      */
-    public function show(Album $album)
+    public function show(int $album_id)
     {
-        return $album;
+        return $this->albumRepository->albumById($album_id);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdateAlbumRequest  $request
-     * @param  \App\Models\Album  $album
+     * @param  int $albumId
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateAlbumRequest $request, Album $album)
+    public function update(UpdateAlbumRequest $request, int $albumId)
     {
-        $album->update($request->all());
-
-        return $album;
+        return $this->albumRepository->updateAlbum($albumId, $request->all());
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Album  $album
+     * @param  int $albumId
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Album $album)
+    public function destroy(int $albumId)
     {
-        $album->delete();
+        // $album->delete();
+        return $this->albumRepository->deleteAlbum($albumId);
 
         return response('resource deleted', 204);
     }
 }
-
-
-// /opt/lampp/htdocs/imageapi/app/Http/Controllers/AlbumController.php
