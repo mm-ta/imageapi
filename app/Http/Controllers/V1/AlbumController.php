@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V1;
 use App\Models\Album;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAlbumRequest;
+use App\Http\Resources\V1\AlbumResource;
 use App\Http\Requests\UpdateAlbumRequest;
 
 class AlbumController extends Controller
@@ -16,7 +17,7 @@ class AlbumController extends Controller
      */
     public function index()
     {
-        return Album::all();
+        return AlbumResource::collection(Album::paginate());
     }
 
     /**
