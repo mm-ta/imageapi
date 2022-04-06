@@ -13,6 +13,13 @@ class ImageManipulationRepository implements ImageManipulationRepositoryInterfac
         return ImageManipulationResource::collection(ImageManipulation::paginate($per_page));
     }
 
+    public function allPaginatedByAlbum($albumId)
+    {
+        return ImageManipulationResource::collection(ImageManipulation::where([
+            'album_id' => $albumId
+        ])->paginate());
+    }
+
     public function presentById($imageManipulationById)
     {
         return new ImageManipulationResource(ImageManipulation::find($imageManipulationById));
