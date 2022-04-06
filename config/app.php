@@ -178,7 +178,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\AlbumRepositoryServiceProvider::class,
-
+        App\Providers\ImageManipulationRepoServiceProvider::class,
     ],
 
     /*
