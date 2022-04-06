@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Facades\Image;
 use App\Http\Requests\ResizeImageRequest;
+use App\Http\Resources\V1\ImageManipulationResource;
 
 class ImageManipulationController extends Controller
 {
@@ -36,13 +37,14 @@ class ImageManipulationController extends Controller
         /** @var \Illuminate\Http\UploadedFile|string $image */
         $image = $all['image'];
 
-        dd($image);
         unset($all['image']);
 
         $data = [
             'type' => ImageManipulation::TYPE_RESIZE,
             'data' => json_encode($all),
             'user_id' => null, // FIXME after implementing authentication.
+            'w' => $all['w'],
+            'ext' => $all['ext'] ?? null
         ];
 
         if (isset($all['album_id'])) {
@@ -78,15 +80,31 @@ class ImageManipulationController extends Controller
         }
         $data['path'] = $directory . $data['name'];
 
-        /**
-         * resizing
-         */
-        // image.jpg => image-resized.jpg
+
+        // retrieve resizing aspect ratios
         $width = $data['w'];
         $height = $data['h'] ?? false;
+        list($InterventionImage, $width, $height) = $this->getImageAspects($width, $height, $originalPath);
 
 
+        // store as an extension desired by the client
+        if ($data['ext'] !== null ) {
+            $extension = $data['ext']; // change extension to the
+        }
 
+        // rename image.jpg => image-resized.jpg
+        $resizeFileName = $filname . '-resized.' . $extension;
+
+        $InterventionImage->resize($width, $height)->save($absolutePath . $resizeFileName);
+
+        // add relative path
+        $data['output_path'] = $directory . $resizeFileName;
+
+        // store in database (create a model)
+        $imageManipulation = ImageManipulation::create($data);
+
+        // return
+        return new ImageManipulationResource($imageManipulation);
     }
 
     /**
@@ -122,22 +140,22 @@ class ImageManipulationController extends Controller
 
     }
 
-    protected function getImageAspects($width, $height = null, $originalPath) : array
+    protected function getImageAspects($width, $height, $originalPath) : array
     {
         $image = Image::make($originalPath);
-        $originalWidth = $image->width();
-        $originalHeight = $image->height();
+        $originalWidth = (float) $image->width();
+        $originalHeight = (float) $image->height();
 
         // to resize by percentage
         if (str_ends_with($width, '%')) {
-            $widthRatio = (float)((str_replace('%', '', $width)) / 100);
+            $widthRatio = (float)((str_replace('%', '', $width)) / 100); // divide by one hundred to turn percent into ratio
             $heightRatio = $height ? (float)((str_replace('%', '', $height)) / 100) : $widthRatio;
             $newWidth = $originalWidth * $widthRatio;
             $newHeight = $originalHeight * $heightRatio;
         } else { // to resize by one fixed size in pixel
             $newWidth = (float)$width;
-            $newRatio = (float)($newWidth / $originalWidth);
-            $newHeight = $height ? (float)$height : ($originalHeight * $newRatio);
+            $ratio = (float)($newWidth / $originalWidth);
+            $newHeight = $height ? (float)$height : ($originalHeight * $ratio);
         }
 
         return [$image, $newWidth, $newHeight];
