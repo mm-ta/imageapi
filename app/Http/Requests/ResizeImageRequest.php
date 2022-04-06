@@ -28,9 +28,9 @@ class ResizeImageRequest extends FormRequest
             'image' => ['required'],
             'w' => [
                 'required',
-                'w' => 'regex: /\d(\.?\d+)%?$/', // to match numeric values: 20%, 20.11%, 1920, 90.34
+                'w' => 'regex: /^\d+(\.\d+)?%?$/', // to match numeric values: 20%, 20.11%, 1920, 90.34
             ],
-            'h' => ['regex: /\d(\.?\d+)%?$/'],
+            'h' => ['regex: /^\d+(\.\d+)?%?$/'],
             'album_id' => 'exists:albums,id',
         ];
 
