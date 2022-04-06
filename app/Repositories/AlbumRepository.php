@@ -10,7 +10,7 @@ class AlbumRepository implements AlbumRepositoryInterface
 {
     public function allPaginated($per_page = 15)
     {
-        return AlbumResource::collection(Album::paginate());
+        return AlbumResource::collection(Album::paginate($per_page));
     }
 
     public function albumById($albumId)
