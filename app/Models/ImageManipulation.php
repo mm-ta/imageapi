@@ -9,8 +9,11 @@ class ImageManipulation extends Model
 {
     use HasFactory;
 
+    protected $table = 'image_manipulations';
+
     const TYPE_RESIZE = 'resize';
     const UPDATED_AT = null;
+
 
     protected $fillable = [
         'name',
