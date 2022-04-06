@@ -66,6 +66,7 @@ class ImageManipulationController extends Controller
         $absolutePath = public_path($directory);
         File::makeDirectory($absolutePath);
 
+        // File
         if ($image instanceof UploadedFile) {
             $data['name'] = $image->getClientOriginalName();
 
@@ -75,7 +76,7 @@ class ImageManipulationController extends Controller
 
             // upload into directory
             $image->move($absolutePath, $data['name']);
-        } else {
+        } else { // Url
             $data['name'] = pathinfo($image, PATHINFO_BASENAME);
             $filname = pathinfo($image, PATHINFO_FILENAME);
             $extension = pathinfo($image, PATHINFO_EXTENSION);
