@@ -4,16 +4,22 @@ namespace App\Http\Controllers\V1;
 
 use App\Models\Album;
 use Illuminate\Support\Str;
-use App\Models\ImageManipulation;
 use Illuminate\Http\UploadedFile;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Facades\Image;
 use App\Http\Requests\ResizeImageRequest;
-use App\Http\Resources\V1\ImageManipulationResource;
+use App\Repositories\Interfaces\ImageManipulationRepositoryInterface;
 
 class ImageManipulationController extends Controller
 {
+    protected ImageManipulationRepositoryInterface $imageManipulationRepository;
+
+    public function __construct(ImageManipulationRepositoryInterface $imageManipulationRepository)
+    {
+        $this->imageManipulationRepository = $imageManipulationRepository;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -21,7 +27,7 @@ class ImageManipulationController extends Controller
      */
     public function index()
     {
-        //
+        return $this->imageManipulationRepository->allPaginated();
     }
 
     /**
@@ -40,7 +46,7 @@ class ImageManipulationController extends Controller
         unset($all['image']);
 
         $data = [
-            'type' => ImageManipulation::TYPE_RESIZE,
+            'type' => $this->imageManipulationRepository->resizeType(),
             'data' => json_encode($all),
             'user_id' => null, // FIXME after implementing authentication.
             'w' => $all['w'],
@@ -101,32 +107,35 @@ class ImageManipulationController extends Controller
         $data['output_path'] = $directory . $resizeFileName;
 
         // store in database (create a model)
-        $imageManipulation = ImageManipulation::create($data);
+        $imageManipulation = $this->imageManipulationRepository->create($data);
 
-        // return
-        return new ImageManipulationResource($imageManipulation);
+        return $this->imageManipulationRepository->present($imageManipulation);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\ImageManipulation  $imageManipulation
+     * @param  int  $imageManipulationId
      * @return \Illuminate\Http\Response
      */
-    public function show(ImageManipulation $imageManipulation)
+    public function show(int $imageManipulationId)
     {
-        //
+        return $this->imageManipulationRepository->presentById($imageManipulationId);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\ImageManipulation  $imageManipulation
+     * @param  int $imageId
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ImageManipulation $imageManipulation)
+    public function destroy(int $imageId)
     {
-        //
+        $this->imageManipulationRepository->delete($imageId);
+
+        return response([
+            'message' => 'resource deleted'],
+             200);
     }
 
     /**
