@@ -7,8 +7,9 @@ use App\Models\ImageManipulation;
 interface ImageManipulationRepositoryInterface
 {
     public function allPaginated($per_page = 15);
-    public function imageManipulationById($imageManipulationById);
-    public function imageManipulation(ImageManipulation $image);
-    public function createImageManipulation($details);
-    public function deleteImageManipulation($imageManipulationById);
+    public function presentById($imageManipulationById);
+    public function present(ImageManipulation $image);
+    public function create($details);
+    public function delete($imageManipulationById);
+    public function resizeType();
 }

@@ -13,23 +13,28 @@ class ImageManipulationRepository implements ImageManipulationRepositoryInterfac
         return ImageManipulationResource::collection(ImageManipulation::paginate($per_page));
     }
 
-    public function imageManipulationById($imageManipulationById)
+    public function presentById($imageManipulationById)
     {
         return new ImageManipulationResource(ImageManipulation::find($imageManipulationById));
     }
 
-    public function imageManipulation(ImageManipulation $image)
+    public function present(ImageManipulation $image)
     {
         return new ImageManipulationResource($image);
     }
 
-    public function createImageManipulation($details)
+    public function create($details)
     {
         return ImageManipulation::create($details);
     }
 
-    public function deleteImageManipulation($imageManipulationById)
+    public function delete($imageManipulationById)
     {
         ImageManipulation::find($imageManipulationById)->delete();
+    }
+
+    public function resizeType()
+    {
+        return ImageManipulation::TYPE_RESIZE;
     }
 }
