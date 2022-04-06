@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,8 +18,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+Route::middleware(['auth'])->group(function() {
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
+
+    Route::prefix('/token')->name('token.')->group(function() {
+        Route::get('/create', [DashboardController::class, 'showTokenForm'])->name('showForm');
+        Route::post('/create', [DashboardController::class, 'createToken'])->name('create');
+        Route::post('/delete/{delete}', [DashboardController::class, 'deleteToken'])->name('delete');
+    });
+});
 
 require __DIR__.'/auth.php';
