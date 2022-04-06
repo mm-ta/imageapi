@@ -141,12 +141,12 @@ class ImageManipulationController extends Controller
     /**
      * show resized images of the album
      *
-     * @param \App\Models\Album $album
+     * @param int $albumId
      * @return \Illuminate\Http\Response
      */
-    public function byAlbum(Album $album)
+    public function byAlbum(int $albumId)
     {
-
+        return $this->imageManipulationRepository->allPaginatedByAlbum($albumId);
     }
 
     protected function getImageAspects($width, $height, $originalPath) : array
