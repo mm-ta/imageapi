@@ -8,9 +8,10 @@ use App\Repositories\Interfaces\ImageManipulationRepositoryInterface;
 
 class ImageManipulationRepository implements ImageManipulationRepositoryInterface
 {
-    public function allPaginated($per_page = 15)
+    public function allPaginated($userId, $per_page = 15)
     {
-        return ImageManipulationResource::collection(ImageManipulation::paginate($per_page));
+        return ImageManipulationResource::collection(ImageManipulation::where('user_id', $userId)
+            ->paginate($per_page));
     }
 
     public function allPaginatedByAlbum($albumId)
@@ -20,9 +21,9 @@ class ImageManipulationRepository implements ImageManipulationRepositoryInterfac
         ])->paginate());
     }
 
-    public function presentById($imageManipulationById)
+    public function getById($imageManipulationById)
     {
-        return new ImageManipulationResource(ImageManipulation::find($imageManipulationById));
+        return ImageManipulation::findOrFail($imageManipulationById);
     }
 
     public function present(ImageManipulation $image)
@@ -35,9 +36,9 @@ class ImageManipulationRepository implements ImageManipulationRepositoryInterfac
         return ImageManipulation::create($details);
     }
 
-    public function delete($imageManipulationById)
+    public function delete(ImageManipulation $image)
     {
-        ImageManipulation::find($imageManipulationById)->delete();
+        $image->delete();
     }
 
     public function resizeType()
