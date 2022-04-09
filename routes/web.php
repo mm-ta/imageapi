@@ -24,7 +24,7 @@ Route::middleware(['auth'])->group(function() {
     Route::prefix('/token')->name('token.')->group(function() {
         Route::get('/create', [DashboardController::class, 'showTokenForm'])->name('showForm');
         Route::post('/create', [DashboardController::class, 'createToken'])->name('create');
-        Route::post('/delete/{delete}', [DashboardController::class, 'deleteToken'])->name('delete');
+        Route::post('/delete/{token}', [DashboardController::class, 'deleteToken'])->name('delete');
     });
 });
 
