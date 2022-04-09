@@ -76,7 +76,7 @@ class AlbumController extends Controller
         }
 
         $data = $request->all();
-        $data['user_id'] = $request->user_id;
+        $data['user_id'] = $request->user()->id;
 
         return $this->albumRepository->updateAlbum($albumId, $data);
     }
