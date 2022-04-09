@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V1;
 
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAlbumRequest;
 use App\Http\Requests\UpdateAlbumRequest;
@@ -19,11 +20,12 @@ class AlbumController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return $this->albumRepository->allPaginated();
+        return $this->albumRepository->allPaginated($request->user()->id, 15);
     }
 
     /**
@@ -34,7 +36,10 @@ class AlbumController extends Controller
      */
     public function store(StoreAlbumRequest $request)
     {
-        $album = $this->albumRepository->createAlbum($request->all());
+        $data = $request->all();
+        $data['user_id'] = $request->user()->id;
+
+        $album = $this->albumRepository->createAlbum($data);
 
         return $this->albumRepository->album($album);
     }
@@ -42,12 +47,18 @@ class AlbumController extends Controller
     /**
      * Display the specified resource.
      *
+     * @param \Illuminate\Http\Request $request
      * @param  int $album_id
      * @return \Illuminate\Http\Response
      */
-    public function show(int $album_id)
+    public function show(Request $request, int $albumId)
     {
-        return $this->albumRepository->albumById($album_id);
+        $album = $this->albumRepository->getAlbumById($albumId);
+        if ($album->user_id != $request->user()->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        return $this->albumRepository->album($album);
     }
 
     /**
@@ -59,20 +70,33 @@ class AlbumController extends Controller
      */
     public function update(UpdateAlbumRequest $request, int $albumId)
     {
-        return $this->albumRepository->updateAlbum($albumId, $request->all());
+        $album = $this->albumRepository->getAlbumById($albumId);
+        if ($album->user_id != $request->user()->id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $data = $request->all();
+        $data['user_id'] = $request->user_id;
+
+        return $this->albumRepository->updateAlbum($albumId, $data);
     }
 
     /**
      * Remove the specified resource from storage.
      *
+     * @param \Illuminate\Http\Request $request
      * @param  int $albumId
      * @return \Illuminate\Http\Response
      */
-    public function destroy(int $albumId)
+    public function destroy(Request $request, int $albumId)
     {
-        // $album->delete();
-        return $this->albumRepository->deleteAlbum($albumId);
+        $album = $this->albumRepository->getAlbumById($albumId);
+        if ($album->user_id != $request->user()->id) {
+            abort(403, 'Unauthorized.');
+        }
 
-        return response('resource deleted', 204);
+        $this->albumRepository->delete($album);
+
+        return response('resource deleted', 200);
     }
 }
