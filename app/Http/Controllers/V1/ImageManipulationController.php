@@ -4,30 +4,36 @@ namespace App\Http\Controllers\V1;
 
 use App\Models\Album;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\Facades\Image;
 use App\Http\Requests\ResizeImageRequest;
+use App\Repositories\Interfaces\AlbumRepositoryInterface;
 use App\Repositories\Interfaces\ImageManipulationRepositoryInterface;
 
 class ImageManipulationController extends Controller
 {
     protected ImageManipulationRepositoryInterface $imageManipulationRepository;
+    protected AlbumRepositoryInterface $albumRepository;
 
-    public function __construct(ImageManipulationRepositoryInterface $imageManipulationRepository)
+    public function __construct(ImageManipulationRepositoryInterface $imageManipulationRepository,
+                                AlbumRepositoryInterface $albumRepository)
     {
         $this->imageManipulationRepository = $imageManipulationRepository;
+        $this->albumRepository = $albumRepository;
     }
 
     /**
      * Display a listing of the resource.
      *
+     * @param \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return $this->imageManipulationRepository->allPaginated();
+        return $this->imageManipulationRepository->allPaginated($request->user()->id, 15);
     }
 
     /**
@@ -48,16 +54,17 @@ class ImageManipulationController extends Controller
         $data = [
             'type' => $this->imageManipulationRepository->resizeType(),
             'data' => json_encode($all),
-            'user_id' => null, // FIXME after implementing authentication.
+            'user_id' => $request->user()->id,
             'w' => $all['w'],
-            'ext' => $all['ext'] ?? null
+            'ext' => $all['ext'] ?? null,
+            'album_id' => null
         ];
 
-        if (isset($all['album_id'])) {
-            // TODO: implement
-
-            $data['album_id'] = $all['album_id'];
+        if ($this->albumRepository->getAlbumById($all['album_id'])->user_id != $request->user()->id) {
+            abort(403, 'You are not allowed to edit this album');
         }
+
+        $data['album_id'] = $all['album_id'];
 
         /**
          * make directory and storing image
@@ -116,37 +123,55 @@ class ImageManipulationController extends Controller
     /**
      * Display the specified resource.
      *
+     * @param \Illuminate\Http\Request  $request
      * @param  int  $imageManipulationId
      * @return \Illuminate\Http\Response
      */
-    public function show(int $imageManipulationId)
+    public function show(Request $request, int $imageManipulationId)
     {
-        return $this->imageManipulationRepository->presentById($imageManipulationId);
+        $image = $this->imageManipulationRepository->getById($imageManipulationId);
+        if ($request->user()->id != $image->user_id) {
+            abort(403, 'You are not allowed to access this image.');
+        }
+
+        return $this->imageManipulationRepository->present($image);
     }
 
     /**
      * Remove the specified resource from storage.
      *
+     * @param \Illuminate\Http\Request  $request
      * @param  int $imageId
      * @return \Illuminate\Http\Response
      */
-    public function destroy(int $imageId)
+    public function destroy(Request $request, int $imageId)
     {
-        $this->imageManipulationRepository->delete($imageId);
+        $image = $this->imageManipulationRepository->getById($imageId);
+        if ($request->user()->id != $image->user_id) {
+            abort(403, 'You are not allowed to delete this image');
+        }
+
+        $this->imageManipulationRepository->delete($image);
 
         return response([
-            'message' => 'resource deleted'],
+            'message' => 'Yout Image manipulation deleted'],
              200);
     }
 
     /**
      * show resized images of the album
      *
+     * @param \Illuminate\Http\Request  $request
      * @param int $albumId
      * @return \Illuminate\Http\Response
      */
-    public function byAlbum(int $albumId)
+    public function byAlbum(Request $request, int $albumId)
     {
+        $album = $this->albumRepository->getAlbumById($albumId);
+        if ($album->user_id != $request->user()->id) {
+            abort(403, 'You are not allowed to access this album.');
+        }
+
         return $this->imageManipulationRepository->allPaginatedByAlbum($albumId);
     }
 
