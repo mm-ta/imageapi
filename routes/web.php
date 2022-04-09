@@ -1,7 +1,9 @@
 <?php
 
+use App\Mail\HelloMail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Mail;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +28,13 @@ Route::middleware(['auth'])->group(function() {
         Route::post('/create', [DashboardController::class, 'createToken'])->name('create');
         Route::post('/delete/{token}', [DashboardController::class, 'deleteToken'])->name('delete');
     });
+});
+
+// a route to test mail
+Route::get('/mail', function() {
+    Mail::to(env('TEST_MAIL_ADDRESS'))->send(new HelloMail());
+
+    return new HelloMail();
 });
 
 require __DIR__.'/auth.php';
