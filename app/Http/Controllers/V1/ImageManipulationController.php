@@ -154,7 +154,7 @@ class ImageManipulationController extends Controller
         $this->imageManipulationRepository->delete($image);
 
         return response([
-            'message' => 'Yout Image manipulation deleted'],
+            'message' => 'Your Image manipulation deleted'],
              200);
     }
 
