@@ -8,14 +8,15 @@ use App\Repositories\Interfaces\AlbumRepositoryInterface;
 
 class AlbumRepository implements AlbumRepositoryInterface
 {
-    public function allPaginated($per_page = 15)
+    public function allPaginated($userId, $per_page = 15)
     {
-        return AlbumResource::collection(Album::paginate($per_page));
+        return AlbumResource::collection(Album::where('user_id', $userId)
+            ->paginate($per_page));
     }
 
-    public function albumById($albumId)
+    public function getAlbumById($albumId)
     {
-        return new AlbumResource(Album::find($albumId));
+        return Album::findOrFail($albumId);
     }
 
     public function album(Album $album)
@@ -36,8 +37,8 @@ class AlbumRepository implements AlbumRepositoryInterface
         return new AlbumResource($album);
     }
 
-    public function deleteAlbum($albumId)
+    public function delete(Album $album)
     {
-        Album::find($albumId)->delete();
+        $album->delete();
     }
 }
